@@ -1,0 +1,42 @@
+# Reproducible Research: Peer Assessment 1
+
+
+## Loading and preprocessing the data
+```{r}
+setwd("~/R/RepData_PeerAssessment1")
+#Set file variables
+fileurl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
+zipname <- "./data/repdata-data-activity.zip"
+filename <- ("./data/activity.csv")
+#Get data
+if (!file.exists("data")) {
+        dir.create("data")
+        }
+if (!file.exists(zipname)){
+        download.file(fileurl, destfile=zipname, mode="wb")
+        unzip(zipname, exdir="./data")
+        dateDownloaded <- date()
+        write(dateDownloaded, file = paste("./data/datedownloaded.txt"))
+}
+
+#show date downloads
+readLines("./data/datedownloaded.txt")
+#read file
+test <- read.csv(filename, colClasses=c("integer","character", "integer"))
+data[,datetime:= as.POSIXct(paste (Date,Time), format="%d/%m/%Y %H:%M:%S")]
+
+```
+
+## What is mean total number of steps taken per day?
+
+
+
+## What is the average daily activity pattern?
+
+
+
+## Imputing missing values
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
