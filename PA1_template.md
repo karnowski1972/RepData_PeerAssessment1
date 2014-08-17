@@ -1,15 +1,11 @@
----
-output:
-  html_document:
-    keep_md: yes
----
 # Reproducible Research: Peer Assessment 1
   
   
 ## Loading and preprocessing the data  
   
 Load the data and fix the date format  
-```{r}
+
+```r
 setwd("~/R/RepData_PeerAssessment1")
 library("ggplot2")
 library("plyr")
@@ -36,13 +32,21 @@ if (!file.exists(zipname)){
 
 #show date downloads
 readLines("./data/datedownloaded.txt")
+```
+
+```
+## [1] "Sat Jul 19 00:32:04 2014"
+```
+
+```r
 #read file
 data <- read.csv(filename, colClasses=c("integer","character", "integer"))
 data$date <- as.Date(data$date, format="%Y-%m-%d")
 ```
   
 ## What is mean total number of steps taken per day?
-```{r plot_daily_steps}
+
+```r
 dailysteps <- aggregate(steps~date,data=data, FUN=sum)
 day <- as.factor(weekdays(dailysteps$date) %in% c("Saturday", "Sunday"))
 levels(day) <- c("weekday", "weekend")
@@ -51,36 +55,48 @@ s <- s + geom_bar(stat="identity")
 s <- s + ylab("Total daily steps") + xlab("Time")
 s <- s + labs(title=paste("Total daily steps", min(dailysteps$date), " to ", max(dailysteps$date)), fill="day")
 s
+```
+
+![plot of chunk plot_daily_steps](./PA1_template_files/figure-html/plot_daily_steps.png) 
+
+```r
 # calculate mean and median
 dailymean <- mean(dailysteps$steps)
 dailymedian <- median(dailysteps$steps)
 ```
   
-Every day the mean steps taken are: `r dailymean` and the median steps taken are: `r dailymedian`  
+Every day the mean steps taken are: 10766.19 and the median steps taken are: 10765  
   
   
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 intervalsteps <-  aggregate(steps~interval,data=data, FUN=mean, na.rm=TRUE)
 s <- ggplot(intervalsteps, aes(x=interval, y=steps))
 s <- s + geom_line()
 s
-maxsteps <- intervalsteps[intervalsteps$steps==max(intervalsteps$steps),1]
-
 ```
 
-The `r maxsteps` interval contains the maxium number of steps  
+![plot of chunk unnamed-chunk-2](./PA1_template_files/figure-html/unnamed-chunk-2.png) 
+
+```r
+maxsteps <- intervalsteps[intervalsteps$steps==max(intervalsteps$steps),1]
+```
+
+The 835 interval contains the maxium number of steps  
 ## Imputing missing values
-```{r}
+
+```r
 missingsteps <- table(is.na(data$steps))[2]
 ```
   
-There are `r missingsteps` number of missing values in the dataset.
+There are 2304 number of missing values in the dataset.
 
 
 A rather simple but efficiet way to fill in the missing values is to take the mean of the time interval. A drawback of this is that we end up with fraction steps. So we need to write a function that replaces the steps values of an x if these are NA with the mean of x. This function can then be applied with ddply from the plyr package using the intervals as factors.  The result is saved in a new dataset data2.  
 
-```{r}
+
+```r
 impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
 data2 <- ddply(data, ~as.factor(interval), transform, steps=impute.mean(steps), date=date)
 # lets reorder again according to date
@@ -89,7 +105,8 @@ data2 <-data2[order(data2$date), ]
 
 Now we can plot the toatl daily steps from the new imputed dataset.  
 
-```{r plot_daily_steps2}
+
+```r
 dailysteps2 <- aggregate(steps~date,data=data2, FUN=sum)
 day <- as.factor(weekdays(dailysteps2$date) %in% c("Saturday", "Sunday"))
 levels(day) <- c("weekday", "weekend")
@@ -98,11 +115,16 @@ s <- s + geom_bar(stat="identity")
 s <- s + ylab("Total daily steps") + xlab("Time")
 s <- s + labs(title=paste("Imputed data: total daily steps", min(dailysteps2$date), " to ", max(dailysteps2$date)), fill="day")
 s
+```
+
+![plot of chunk plot_daily_steps2](./PA1_template_files/figure-html/plot_daily_steps2.png) 
+
+```r
 dailymean2 <- mean(dailysteps2$steps)
 dailymedian2 <- median(dailysteps2$steps)
 ```
 
-The new daily mean of `r dailymean2` from data2 with the imputed vlues is identical of the old daily mean of `r dailymean`. This is not surprising since we imputed the values from the mean steps of the interval. However, the new daily median `r dailymedian2` is differnt from the old daily median `r dailymedian`. This is not surprising since we include now more values that were before omited when calculating the median.  
+The new daily mean of 10766.19 from data2 with the imputed vlues is identical of the old daily mean of 10766.19. This is not surprising since we imputed the values from the mean steps of the interval. However, the new daily median 10766.19 is differnt from the old daily median 10765. This is not surprising since we include now more values that were before omited when calculating the median.  
   
 One surprising feature of the data set was revealed when looking at the plotted total steps from the imputed data set. Two days had very low daily steps: 2012.10.02 and 2012.11.15. The minute interval of these days are predominately filled with zero steps. One can only assume that the study participant must have removed their activity monitor on these days or that the monitor was faulty.
 
@@ -111,19 +133,23 @@ One surprising feature of the data set was revealed when looking at the plotted 
 
 Lets determine the weekdays as we already have done above.   
 
-```{r}
+
+```r
 data$day <- as.factor(weekdays(data$date) %in% c("Saturday", "Sunday"))
 levels(data$day) <- c("weekday", "weekend")
 ```
 
 We can aggregate the steps according to interval and day with the mean function.  
 
-```{r}
+
+```r
 intervalsteps <-  aggregate(steps~interval+day,data=data, FUN=mean, na.rm=TRUE)
 s <- ggplot(intervalsteps, aes(x=interval, y=steps))
 s <- s + geom_line()
 s <- s + facet_wrap(~day, nrow = 2)
 s
 ```
+
+![plot of chunk unnamed-chunk-6](./PA1_template_files/figure-html/unnamed-chunk-6.png) 
   
 We can easy see that the activity pattern is different between weekdays and weekends. During the weekend the subject got up later and stayed up longer.  
