@@ -37,7 +37,8 @@ if (!file.exists(zipname)){
 #show date downloads
 readLines("./data/datedownloaded.txt")
 #read file
-data <- read.csv(filename, colClasses=c("integer","character", "integer"))
+data <- read.csv(filename)
+
 data$date <- as.Date(data$date, format="%Y-%m-%d")
 ```
   

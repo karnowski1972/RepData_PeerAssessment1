@@ -46,17 +46,40 @@ data$date <- as.Date(data$date, format="%Y-%m-%d")
 dailysteps <- aggregate(steps~date,data=data, FUN=sum)
 day <- as.factor(weekdays(dailysteps$date) %in% c("Saturday", "Sunday"))
 levels(day) <- c("weekday", "weekend")
+# calculate mean and median
+dailymean <- mean(dailysteps$steps)
+dailymedian <- median(dailysteps$steps)
+
+#Histogram
+t <- ggplot(dailysteps, aes(x=steps))
+t <- t + geom_histogram(binwidth=2500, colour="black", fill="white")
+t <- t + geom_vline(aes(xintercept=dailymean),color="red", linetype="dashed", size=1)
+t <- t + geom_vline(aes(xintercept=dailymedian),color="blue", linetype="dotted", size=1)
+t <- t + labs(title=paste("Histogram of total daily steps", min(dailysteps$date), " to ", max(dailysteps$date)))
+t                    
+
+#histogram with smooth desity estimate
+t <- ggplot(dailysteps, aes(x=steps))
+t <- t + geom_histogram(aes(y=..density..), binwidth=2500, colour="black", fill="white")
+t <- t + geom_vline(aes(xintercept=dailymean),color="red", linetype="dashed", size=1)
+t <- t + geom_vline(aes(xintercept=dailymedian),color="blue", linetype="dotted", size=1)
+t <- t + labs(title=paste("Histogram of total daily steps", min(dailysteps$date), " to ", max(dailysteps$date)))
+t <- t + geom_density(alpha=.2, fill="#FF6666")
+t
+
+#Barplot of each day
 s <- ggplot(dailysteps, aes(x=date,y=steps, fill=day))
 s <- s + geom_bar(stat="identity")
 s <- s + ylab("Total daily steps") + xlab("Time")
 s <- s + labs(title=paste("Total daily steps", min(dailysteps$date), " to ", max(dailysteps$date)), fill="day")
 s
-# calculate mean and median
-dailymean <- mean(dailysteps$steps)
-dailymedian <- median(dailysteps$steps)
+
+
 ```
   
+Above you find three plot. The first plot is the one asked in the assignement. However, I find the plotting of the density estimate gives a better feel for the data distribution. The red and in blue  lines are mean and median.  
 Every day the mean steps taken are: `r dailymean` and the median steps taken are: `r dailymedian`  
+The third plot shows a barplot of the total steps from each day. this indicates were some gaps are.  
   
   
 ## What is the average daily activity pattern?
@@ -87,23 +110,43 @@ data2 <- ddply(data, ~as.factor(interval), transform, steps=impute.mean(steps), 
 data2 <-data2[order(data2$date), ]
 ```
 
-Now we can plot the toatl daily steps from the new imputed dataset.  
+Now we can plot the total daily steps from the new imputed dataset.  
 
 ```{r plot_daily_steps2}
 dailysteps2 <- aggregate(steps~date,data=data2, FUN=sum)
 day <- as.factor(weekdays(dailysteps2$date) %in% c("Saturday", "Sunday"))
 levels(day) <- c("weekday", "weekend")
+# calculate mean and median
+dailymean2 <- mean(dailysteps2$steps)
+dailymedian2 <- median(dailysteps2$steps)
+#Histogram 
+t <- ggplot(dailysteps2, aes(x=steps))
+t <- t + geom_histogram(binwidth=2500, colour="black", fill="white")
+t <- t + geom_vline(aes(xintercept=dailymean2),color="red", linetype="dashed", size=1)
+t <- t + geom_vline(aes(xintercept=dailymedian2),color="blue", linetype="dotted", size=1)
+t <- t + labs(title=paste("Histogram of total daily steps", min(dailysteps2$date), " to ", max(dailysteps2$date)))
+t
+#Histogram with smooth desity estimate
+t <- ggplot(dailysteps2, aes(x=steps))
+t <- t + geom_histogram(aes(y=..density..),binwidth=2500, colour="black", fill="white")
+t <- t + geom_vline(aes(xintercept=dailymean2),color="red", linetype="dashed", size=1)
+t <- t + geom_vline(aes(xintercept=dailymedian2),color="blue", linetype="dotted", size=1)
+t <- t + labs(title=paste("Histogram of total daily steps with imputed values", min(dailysteps$date), " to ", max(dailysteps$date)))
+t <- t + geom_density(alpha=.2, fill="#FF6666")
+t
+#Barplot of each day
 s <- ggplot(dailysteps2, aes(x=date,y=steps, fill=day))
 s <- s + geom_bar(stat="identity")
 s <- s + ylab("Total daily steps") + xlab("Time")
 s <- s + labs(title=paste("Imputed data: total daily steps", min(dailysteps2$date), " to ", max(dailysteps2$date)), fill="day")
 s
-dailymean2 <- mean(dailysteps2$steps)
-dailymedian2 <- median(dailysteps2$steps)
-```
 
-The new daily mean of `r dailymean2` from data2 with the imputed vlues is identical of the old daily mean of `r dailymean`. This is not surprising since we imputed the values from the mean steps of the interval. However, the new daily median `r dailymedian2` is differnt from the old daily median `r dailymedian`. This is not surprising since we include now more values that were before omited when calculating the median.  
+```
   
+I have plotted again three plots. The first is the required histogram and the second shows the histogram with a smooth density estimate.  Both have the mean and median plotted in red and blue.
+The new daily mean of `r dailymean2` from data2 with the imputed vlues is identical of the old daily mean of `r dailymean`. This is not surprising since we imputed the values from the mean steps of the interval. However, the new daily median `r dailymedian2` is differnt from the old daily median `r dailymedian`. This is not surprising since we include now more values that were before omited when calculating the median.
+  
+The third pot is again a barplot of the sum of total steps from each day.    
 One surprising feature of the data set was revealed when looking at the plotted total steps from the imputed data set. Two days had very low daily steps: 2012.10.02 and 2012.11.15. The minute interval of these days are predominately filled with zero steps. One can only assume that the study participant must have removed their activity monitor on these days or that the monitor was faulty.
 
 
